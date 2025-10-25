@@ -8,9 +8,9 @@ const SpinningWheel = () => {
   const [isSpinning, setIsSpinning] = useState(false)
   const [rotation, setRotation] = useState(0)
   const [selectedLetter, setSelectedLetter] = useState(null)
+  const [selectedIndex, setSelectedIndex] = useState(null)
   const audioCtxRef = useRef(null)
   const tikIntervalRef = useRef(null)
-  const randomIndexRef = useRef(null)
 
   const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))
   const sectorAngle = 360 / letters.length
@@ -88,18 +88,34 @@ const SpinningWheel = () => {
     }
   }, [])
 
+  // Function to calculate which letter the pointer is pointing to
+  const getLetterAtPointer = (finalRotation) => {
+    // Normalize the rotation to be between 0 and 360
+    const normalizedRotation = ((finalRotation % 360) + 360) % 360
+    
+    // The pointer is at the top (0 degrees), so we need to find which sector
+    // has its center closest to the pointer position
+    // Since the wheel rotates, we look at the inverse position
+    const pointerAngle = (360 - normalizedRotation) % 360
+    
+    // Calculate which sector the pointer is pointing to
+    // Each sector covers sectorAngle degrees, starting from sectorAngle/2 for the first letter
+    let letterIndex = Math.floor((pointerAngle + sectorAngle / 2) / sectorAngle) % letters.length
+    
+    return { letter: letters[letterIndex], index: letterIndex }
+  }
+
   const spinWheel = () => {
     if (isSpinning) return
 
     setIsSpinning(true)
     setSelectedLetter(null)
+    setSelectedIndex(null)
     startTikSound()
 
-    const randomIndex = Math.floor(Math.random() * letters.length)
-    randomIndexRef.current = randomIndex
-
     const spins = 5 + Math.random() * 3
-    // Adjust for pointer position - pointer points to top, so we need to offset
+    // Generate a random target angle that aligns with a sector center
+    const randomIndex = Math.floor(Math.random() * letters.length)
     const targetAngle = randomIndex * sectorAngle + sectorAngle / 2
     const finalRotation = rotation + 360 * spins + (360 - targetAngle)
     const duration = 3
@@ -110,7 +126,10 @@ const SpinningWheel = () => {
       stopTikSound()
       setIsSpinning(false)
 
-      setSelectedLetter(letters[randomIndexRef.current])
+      // Calculate which letter the pointer is actually pointing to
+      const result = getLetterAtPointer(finalRotation)
+      setSelectedLetter(result.letter)
+      setSelectedIndex(result.index)
       playStopSound()
     }, duration * 1000)
   }
@@ -181,7 +200,7 @@ const SpinningWheel = () => {
             return (
               <div
                 key={`sector-${index}`}
-                className="sector"
+                className={`sector ${selectedIndex === index ? 'selected' : ''}`}
                 style={{
                   backgroundColor: colors[index],
                   clipPath: `polygon(50% 50%, ${x1}% ${y1}%, ${x2}% ${y2}%)`,
