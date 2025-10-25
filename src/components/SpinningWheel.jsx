@@ -93,14 +93,17 @@ const SpinningWheel = () => {
     // Normalize the rotation to be between 0 and 360
     const normalizedRotation = ((finalRotation % 360) + 360) % 360
     
-    // The pointer is at the top (0 degrees), so we need to find which sector
-    // has its center closest to the pointer position
-    // Since the wheel rotates, we look at the inverse position
-    const pointerAngle = (360 - normalizedRotation) % 360
+    // The pointer is at the top (0 degrees)
+    // We need to find which sector is at the pointer position
+    // Since the wheel rotates clockwise, we need to account for that
+    const effectiveAngle = (360 - normalizedRotation) % 360
     
     // Calculate which sector the pointer is pointing to
-    // Each sector covers sectorAngle degrees, starting from sectorAngle/2 for the first letter
-    let letterIndex = Math.floor((pointerAngle + sectorAngle / 2) / sectorAngle) % letters.length
+    // The first sector (A) starts at 0 degrees and goes to sectorAngle
+    let letterIndex = Math.floor(effectiveAngle / sectorAngle)
+    
+    // Ensure index is within bounds
+    letterIndex = letterIndex % letters.length
     
     return { letter: letters[letterIndex], index: letterIndex }
   }
@@ -113,11 +116,20 @@ const SpinningWheel = () => {
     setSelectedIndex(null)
     startTikSound()
 
+    // Generate random spins and a random target sector
     const spins = 5 + Math.random() * 3
-    // Generate a random target angle that aligns with a sector center
     const randomIndex = Math.floor(Math.random() * letters.length)
-    const targetAngle = randomIndex * sectorAngle + sectorAngle / 2
-    const finalRotation = rotation + 360 * spins + (360 - targetAngle)
+    
+    // Calculate the target rotation that will make the pointer land on the random sector
+    // The pointer is at top (0°), so we want the target sector to be at the pointer
+    // Each sector's center is at: index * sectorAngle + sectorAngle/2
+    // We need to rotate so that this center aligns with the pointer (0°)
+    const targetSectorCenter = randomIndex * sectorAngle + sectorAngle / 2
+    
+    // To align the sector center with the pointer, we need to rotate by:
+    // full spins + adjustment to make the sector center land at pointer position
+    const finalRotation = rotation + 360 * spins - targetSectorCenter
+    
     const duration = 3
 
     setRotation(finalRotation)
@@ -131,6 +143,9 @@ const SpinningWheel = () => {
       setSelectedLetter(result.letter)
       setSelectedIndex(result.index)
       playStopSound()
+      
+      console.log(`Final rotation: ${finalRotation}, Normalized: ${((finalRotation % 360) + 360) % 360}`)
+      console.log(`Pointer is at letter: ${result.letter}, Index: ${result.index}`)
     }, duration * 1000)
   }
 
