@@ -11,7 +11,7 @@
     #9b6ee0 60%,
     #f6c1ff 100%
   );
-  padding: 120px 20px 60px;
+  padding: 200px 20px 60px;
   font-family: "Arial", sans-serif;
   position: relative;
   overflow-x: hidden;
@@ -65,33 +65,25 @@
   z-index: 5;
 }
 
-/* --- Letters Layer (above sectors) --- */
+/* --- Letters Layer (SVG) --- */
 .letters-layer {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 20;
 }
 
-/* --- Letters around the rim --- */
+/* --- Letters in SVG --- */
 .letter {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: center;
-  font-size: 36px;
-  font-weight: 800;
-  color: rgba(20, 20, 20, 0.92);
-  text-shadow: 0 2px 6px rgba(255, 255, 255, 0.55), 0 4px 8px rgba(0, 0, 0, 0.12);
+  font-size: 3.5px;
+  font-weight: 900;
+  fill: #000000;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
   user-select: none;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 22;
-  letter-spacing: 0.6px;
-  width: 40px;
-  height: 40px;
 }
 
 /* --- Spin Button (center) --- */
@@ -228,7 +220,7 @@
   }
 
   .letter {
-    font-size: 24px;
+    font-size: 2.5px;
   }
 
   .spin-button {

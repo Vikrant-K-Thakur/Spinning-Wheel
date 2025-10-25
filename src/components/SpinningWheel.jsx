@@ -8,16 +8,9 @@ const SpinningWheel = () => {
   const [isSpinning, setIsSpinning] = useState(false)
   const [rotation, setRotation] = useState(0)
   const [selectedLetter, setSelectedLetter] = useState(null)
-  const [windowSize, setWindowSize] = useState(window.innerWidth)
   const audioCtxRef = useRef(null)
   const tikIntervalRef = useRef(null)
   const randomIndexRef = useRef(null)
-
-  React.useEffect(() => {
-    const handleResize = () => setWindowSize(window.innerWidth)
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
 
   const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))
   const sectorAngle = 360 / letters.length
@@ -198,24 +191,32 @@ const SpinningWheel = () => {
             )
           })}
 
-          {/* Letters layer — placed above sectors so they are never clipped */}
-          <div className="letters-layer" aria-hidden="true">
+          {/* Letters layer - using SVG for perfect positioning */}
+          <svg className="letters-layer" viewBox="0 0 100 100" aria-hidden="true">
             {letters.map((letter, index) => {
-              // Center letters in each sector
-              const angleForLetter = index * sectorAngle + sectorAngle / 2
-              const radians = ((angleForLetter - 90) * Math.PI) / 180
-              const wheelSize = windowSize <= 768 ? Math.min(windowSize * 0.9, 450) : 700
-              const radius = wheelSize * 0.34
-              const x = Math.cos(radians) * radius
-              const y = Math.sin(radians) * radius
-              const transform = `translate(${x}px, ${y}px)`
+              const angle = index * sectorAngle + sectorAngle / 2
+              const radians = (angle * Math.PI) / 180
+              const radius = 35 // Slightly reduced radius for better centering
+              
+              // Convert polar to cartesian coordinates with proper orientation
+              const x = 50 + radius * Math.sin(radians)
+              const y = 50 - radius * Math.cos(radians)
+              
               return (
-                <span key={`letter-${letter}`} className="letter" style={{ transform }}>
+                <text
+                  key={`letter-${letter}`}
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  className="letter"
+                  transform={`rotate(${angle + 90}, ${x}, ${y})`} // Added 90 degrees to make letters upright
+                >
                   {letter}
-                </span>
+                </text>
               )
             })}
-          </div>
+          </svg>
 
           <button
             className={`spin-button ${isSpinning ? "spinning" : ""}`}
